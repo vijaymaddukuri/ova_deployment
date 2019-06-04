@@ -1,0 +1,15 @@
+
+# Developer Tools
+pyvmomi==6.7
+pyvim==0.0.1
+paramiko=2.4.2
+urllib3=1.25.3
+flake8==3.5.0
+
+# Testing
+nose-progressive==1.5.1
+coverage==4.5.1
+
+# build
+wheel==0.31.1
+setuptools==39.0.1

@@ -1,0 +1,45 @@
+backupservice:
+      SERVER_IP: "10.100.249.91"
+      SERVER_USERNAME: "tas"
+      SERVER_PASSWORD: "xStream2015!"
+      SSH_PORT_NUMaBER: 22
+      INSTALLATION_SCRIPT: ['install_tas_svc.sh']
+      STOP_SERVICES: ['tas.service']
+      CLEANUP_SCRIPTS: ['clean_up_app_logs.sh', 'clear_ovaconfig.sh']
+      properties: {'Hostname': 'backupservice_vm','IP_Address': '10.100.249.91', 'Subnet_Mask': '255.255.255.128',
+                   'Default_Gateway': '10.100.249.1', 'Primary_DNS': '10.100.26.177',
+                   'MASTER_IP': '10.100.249.87', 'MASTER_API_PORT': '8087', 'MASTER_API_USERNAME': 'netapiusr',
+                   'MASTER_API_PASSWORD': 'Password1','MASTER_SALT_BASE_LOCATION': '/etc/salt',
+                   'SSH_PORT_NUMBER': '22', 'DSM_IP': '10.100.249.93', 'DSM_TENANT_ID': 'abcde',
+                   'DSM_TENANT_PWD': 'Password','NIMSOFT_HUB_IP': '10.100.249.93', 'DSM_PORT': '4119',
+                   'DSM_API_SECRET_KEY': 'dummy_key',
+                   'NIMSOFT_HUB_NAME': 'dummyhubname', 'NIMSOFT_DOMAIN': 'Virtustream',
+                   'NIMSOFT_HUB_USERNAME': 'dummy', 'NIMSOFT_HUB_PASSWORD': 'dummy',
+                   'NIMSOFT_HUB_ROBOT_NAME': 'win-31u751di7n1', 'NETWORKER_SERVER_COUNT': '1',
+                   'NETWORKER1_URL': 'https://10.100.249.48:9090', 'NETWORKER1_MINION_ID': 'minion1',
+                   'NETWORKER1_USERNAME': 'administrator', 'NETWORKER1_PASSWORD': 'Password!1',
+                   'NETWORKER1_PG_15': 'Bronze_Filesystem15', 'NETWORKER1_PG_30': 'Bronze_Filesystem30',
+                   'NETWORKER1_HOSTNAME': 'dummy.hostname', 'DOMAIN_NAME': 'dummy_domain',
+                   'DATADOMAIN1_IP': '1.1.1.4', 'DATADOMAIN1_HOSTNAME': 'dd.hostname',
+                   'bbserver_ip': '10.100.249.62', 'bbserver_port': '7000',
+                   'tenant_id': '9bdcead0-e40c-11e8-9f32-f2801f1b9fd1'}
+
+middleware:
+      vm_details:
+      SERVER_IP: "10.100.249.105"
+      SERVER_USERNAME: "tas"
+      SERVER_PASSWORD: "xStream2015!"
+      SSH_PORT_NUMBER: 22
+      INSTALLATION_SCRIPT: ['install_middleware_svc.sh', 'install_worker_svc.sh']
+      STOP_SERVICES: ['bws.service', 'mws.service']
+      CLEANUP_SCRIPTS: ['clean_up_app_logs.sh', 'clear_ovaconfig.sh']
+      properties: {'Hostname': 'middleware_vm','IP_Address': '10.100.249.105', 'Subnet_Mask': '255.255.255.128',
+                           'Default_Gateway': '10.100.249.1', 'Primary_DNS': '10.100.26.177',
+                           'Http_Proxy': '10.131.236.9', 'Http_Proxy_Port': '3128',
+                           'CONSUL_IP': '10.100.249.47', 'CONSUL_PORT': '8500', 'XSTREAM_IP': '10.100.249.35',
+                           'XSTREAM_KEY': '0b850704-badd-6011-1f9a-295c65d6ff715df2b058-9ac3-70cb-c42b-09574be348c9',
+                           'XSTREAM_SECRET': '858ae927-7499-c264-a256-15761f48504ef8dc2365-2eca-24ad-262b-554a15ac4d4d',
+                           'VSCAN_SERVER_URL': 'https://nxpse01.core.drhm01.ecsops.com',
+                           'VSCAN_SERVER_USERNAME': 'xad_user', 'VSCAN_SERVER_PASSWORD': 'xStream2018!',
+                           'NIMSOFT_DOMAIN': 'dummy_domain', 'NIMSOFT_IM_API_USERNAME': 'dummy_user',
+                           'NIMSOFT_IM_API_PASSWORD': 'dummy_pwd', 'NIMSOFT_IM_API_URL': 'http://10.100.249.7/test.php'}

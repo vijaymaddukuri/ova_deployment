@@ -1,0 +1,10 @@
+a list:
+- 1
+- 42
+- 3.141
+- 1337
+- help
+another_dict:
+  foo: bar
+  key: value
+  the answer: 42

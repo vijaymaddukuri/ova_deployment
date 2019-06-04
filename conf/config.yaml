@@ -1,0 +1,9 @@
+backupservice:
+      SERVER_IP: "192.168.1.10"
+      SERVER_USERNAME: "root"
+      SERVER_PASSWORD: "Password1"
+      SSH_PORT_NUMaBER: 22
+      properties: {'Hostname': 'nightly-vm','IP_Address': '192.168.1.10', 'Subnet_Mask': '255.255.255.128',
+                           'Default_Gateway': '192.168.1.1', 'Primary_DNS': '8.8.8.8',
+                           }
+

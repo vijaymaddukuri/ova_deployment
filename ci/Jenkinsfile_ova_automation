@@ -1,0 +1,115 @@
+void runStages(String tag) {
+    docker.image(tag).inside("--privileged=true") {
+
+    
+        stage('Generate the build'){
+        
+            def taglist = sh script: 'git tag', returnStdout: true
+                
+            String[] splitData = taglist.split("\n");
+            for (String eachSplit : splitData) {
+                if (eachSplit.startsWith("v")) {
+                lasttag = eachSplit.substring(1);
+                }
+            }
+        
+            def lastbuild = Jenkins.instance.getItemByFullName("${env.JOB_BASE_NAME}").getLastSuccessfulBuild().toString()
+                    
+            def lastbuildnumber = lastbuild.substring(lastbuild.indexOf('#') + 1)
+                    
+            int newbuildnumber = lastbuildnumber.toInteger() + 1
+                
+            def ver = lasttag + "." + newbuildnumber
+
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'VIJAY_EMCRUBICOIN',
+                              usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                sh '''
+                    dir=$(pwd)
+                    mkdir $dir/ci/ova_automation
+                    git clone http://$USERNAME:$PASSWORD@github.emcrubicon.com/AAI/ova_scripts.git
+                  '''
+            }
+            
+            withCredentials([usernamePassword(credentialsId: 'vcenter credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+        
+            sh '''    
+                version='''+ver+'''
+                echo $version
+                dir=$(pwd)
+                wget https://artifactory.core.rcsops.com:443/artifactory/core-generic-local/tas_release/tas_base.ova
+                virtualenv venv -p python3.6
+                source venv/bin/activate
+                python3 setup.py install
+                pip3.6 install -r requirements/local.txt
+                chmod -R 777 build.sh
+                ./build.sh
+                cd $dir/dist
+                mv *.gz tenant_automation_service-$version.tar.gz
+                file=`ls | grep ".gz"`
+
+                cd $dir/pyvmomi_scripts
+
+                python3 power_cycles.py -s '10.100.28.108' -o 443 -u $USERNAME -p $PASSWORD --vmname 'backupservice_vm' --powercycle 'power_off'
+
+                python3 delete_vm.py -s '10.100.28.108' -o 443 -u $USERNAME -p $PASSWORD --vmname 'backupservice_vm'
+
+                python3 deploy_ova.py -s '10.100.28.108' -o 443 -u $USERNAME -p $PASSWORD --datacenter 'VC8_DC' --datastore '5TBDatastore' --resource-pool 'xStreamHA' --ova-path $dir/tas_base.ova --configpath $dir/ci/ova_automation/config.yaml --service 'backupservice'
+
+                python3 power_cycles.py -s '10.100.28.108' -o 443 -u $USERNAME -p $PASSWORD --vmname 'backupservice_vm'  --powercycle 'power_on'
+
+                cd $dir/common
+
+                python3 remote_operations.py $dir/ci/ova_automation $dir/dist/$file /home/tas/$file 'backupservice' True
+                    
+                cd $dir/pyvmomi_scripts
+
+                mkdir ovf
+                    
+                python3 power_cycles.py -s '10.100.28.108' -o 443 -u $USERNAME -p $PASSWORD --vmname 'backupservice_vm' --powercycle 'shutdown'
+                    
+                python3 export_vm.py -s '10.100.28.108' -o 443 -u $USERNAME -p $PASSWORD --vmname 'backupservice_vm' -w $dir/ci/ova_automation/ovf
+                    
+                cd $dir/ci/ova_automation/ovf/*
+                    
+                ovftool backupservice_vm.ovf backupservice_vm.ova
+                    
+                cd $dir
+                '''
+            }
+            withCredentials([usernamePassword(credentialsId: 'Jenkins Artifactory', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    
+                sh """
+                    dir=\$(pwd)
+                    cd \$dir/ci/ova_automation/ovf/*
+                    curl -u $USERNAME:$PASSWORD -T 'backupservice_vm.ova' 'https://artifactory.core.rcsops.com/artifactory/core-generic-local/tas_backup_daily.ova'
+                    cd \$dir/dist
+                    curl -u $USERNAME:$PASSWORD -T 'tenant_automation_service-${ver}.tar.gz' 'https://artifactory.core.rcsops.com/artifactory/core-generic-local/tenant_automation_service-${ver}.tar.gz'
+                    """
+                }
+        }
+
+    }
+}
+
+def vs = new devops.VariousStuff1().configure([notifyRecipients : 'vijay.maddukuri@yahoo.com'])
+
+vs.try_node('docker_engine') {
+
+    try {
+        jdk = tool name: 'OpenJDK 1.8.0', type: 'hudson.model.JDK'
+        deleteDir()
+    
+        checkout scm
+
+        imageTag = vs.ensureDockerImage('devops/build-image', 'tasvmcontainer')
+
+        runStages(imageTag)
+
+    } catch(e) {
+
+        def color = 'danger'
+        def err_message = "Job: ${JOB_NAME}:${BUILD_NUMBER} got an exception during Build stage: " + e.toString()
+        def info_message = "Job URL: ${BUILD_URL}"
+        throw (e)
+    }
+}
